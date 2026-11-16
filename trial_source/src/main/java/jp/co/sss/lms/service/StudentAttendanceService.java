@@ -72,6 +72,44 @@ public class StudentAttendanceService {
 
 		return attendanceManagementDtoList;
 	}
+	
+	/**
+	 * 過去日の勤怠未入力チェック
+	 *
+	 * @return 過去日に未入力の勤怠がある場合はtrue
+	 */
+	public boolean notEnterCheck() {
+
+	    // 勤怠一覧を取得
+	    List<AttendanceManagementDto> attendanceManagementDtoList =
+	            getAttendanceManagement(
+	                    loginUserDto.getCourseId(),
+	                    loginUserDto.getLmsUserId());
+
+	    // 本日の日付を取得
+	    java.util.Date today = attendanceUtil.getTrainingDate();
+
+	    // 勤怠一覧を確認
+	    for (AttendanceManagementDto dto : attendanceManagementDtoList) {
+
+	        // 過去日の勤怠のみチェック
+	        if (dto.getTrainingDate() != null
+	                && dto.getTrainingDate().before(today)) {
+
+	            String startTime = dto.getTrainingStartTime();
+	            String endTime = dto.getTrainingEndTime();
+
+	            // 出勤時刻または退勤時刻が未入力の場合
+	            if (startTime == null || startTime.isEmpty()
+	                    || endTime == null || endTime.isEmpty()) {
+	                return true;
+	            }
+	        }
+	    }
+
+	    // 未入力がなければfalse
+	    return false;
+	}
 
 	/**
 	 * 出退勤更新前のチェック
@@ -333,5 +371,6 @@ public class StudentAttendanceService {
 		// 完了メッセージ
 		return messageUtil.getMessage(Constants.PROP_KEY_ATTENDANCE_UPDATE_NOTICE);
 	}
+	
 
 }
